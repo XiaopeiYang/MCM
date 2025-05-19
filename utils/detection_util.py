@@ -9,7 +9,8 @@ from transformers import CLIPTokenizer
 from torchvision import datasets
 import torch.nn.functional as F
 import torchvision
-
+from collections import OrderedDict
+import clip
 
 def set_ood_loader_ImageNet(args, out_dataset, preprocess, root):
     '''
@@ -205,8 +206,26 @@ def get_Mahalanobis_score(args, net, test_loader, classwise_mean, precision, in_
             Mahalanobis_score_all.extend(-Mahalanobis_score.cpu().numpy())
         
     return np.asarray(Mahalanobis_score_all, dtype=np.float32)
+#yang
 
-def get_ood_scores_clip(args, net, loader, test_labels, in_dist=False):
+def compute_description_encodings(args,net,test_labels):
+    description_encodings = OrderedDict()
+    for k, v in test_labels.items():
+        tokenizer = CLIPTokenizer.from_pretrained(args.ckpt)
+        text_inputs = tokenizer(v, padding=True, return_tensors="pt")
+        text_features = net.get_text_features(input_ids=text_inputs['input_ids'].cuda(),
+                                                attention_mask=text_inputs['attention_mask'].cuda()).float()
+        normalized_features = F.normalize(text_features, dim=-1)
+        description_encodings[k] = normalized_features
+    return description_encodings
+
+def aggregate_similarity(similarity_matrix_chunk, aggregation_method='mean'):
+    if aggregation_method == 'max': return similarity_matrix_chunk.max(dim=1)[0]
+    elif aggregation_method == 'sum': return similarity_matrix_chunk.sum(dim=1)
+    elif aggregation_method == 'mean': return similarity_matrix_chunk.mean(dim=1)
+    else: raise ValueError("Unknown aggregate_similarity")
+
+def get_ood_scores_clip_description(args, net, loader, test_labels, in_dist=False):
     '''
     used for scores based on img-caption product inner products: MIP, entropy, energy score. 
     '''
@@ -214,7 +233,11 @@ def get_ood_scores_clip(args, net, loader, test_labels, in_dist=False):
     concat = lambda x: np.concatenate(x, axis=0)
     _score = []
     tokenizer = CLIPTokenizer.from_pretrained(args.ckpt)
-
+   
+    description_encodings=[]
+    description_encodings = compute_description_encodings(args,net,test_labels)
+    n_classes = len(list(test_labels.keys()))
+   
     tqdm_object = tqdm(loader, total=len(loader))
     with torch.no_grad():
         for batch_idx, (images, labels) in enumerate(tqdm_object):
@@ -224,12 +247,70 @@ def get_ood_scores_clip(args, net, loader, test_labels, in_dist=False):
   
             image_features = net.get_image_features(pixel_values = images).float()
             image_features /= image_features.norm(dim=-1, keepdim=True)
+            
+            if args.model == 'CLIP':
+            
+                image_description_similarity = [None]*n_classes
+                image_description_similarity_cumulative = [None]*n_classes
+                for  i, (k, v) in enumerate(description_encodings.items()):
+                    dot_product_matrix = image_features @ v.T
+                    image_description_similarity[i] = dot_product_matrix
+                    image_description_similarity_cumulative[i] = aggregate_similarity(image_description_similarity[i])
+                output = torch.stack(image_description_similarity_cumulative,dim=1)
+            
+            if args.score == 'max-logit':
+                smax = to_np(output)
+            else:
+                smax = to_np(F.softmax(output/ args.T, dim=1))
+            if args.score == 'energy':
+                #Energy = - T * logsumexp(logit_k / T), by default T = 1 in https://arxiv.org/pdf/2010.03759.pdf
+                _score.append(-to_np((args.T*torch.logsumexp(output / args.T, dim=1))))  #energy score is expected to be smaller for ID
+            elif args.score == 'entropy':  
+                _score.append(entropy(smax, axis = 1)) 
+            elif args.score == 'var':
+                _score.append(-np.var(smax, axis = 1))
+            elif args.score in ['MCM', 'max-logit']:
+                _score.append(-np.max(smax, axis=1)) 
+    return concat(_score)[:len(loader.dataset)].copy()
+
+def get_ood_scores_clip(args, net, loader, test_labels, in_dist=False):
+    '''
+    used for scores based on img-caption product inner products: MIP, entropy, energy score. 
+    '''
+    to_np = lambda x: x.data.cpu().numpy()
+    concat = lambda x: np.concatenate(x, axis=0)
+    _score = []
+    tokenizer = CLIPTokenizer.from_pretrained(args.ckpt)
+    # ####yang
+    # description_encodings=[]
+    # description_encodings = compute_description_encodings(args,net,test_labels)
+    # n_classes = len(list(test_labels.keys()))
+    # ####
+    tqdm_object = tqdm(loader, total=len(loader))
+    with torch.no_grad():
+        for batch_idx, (images, labels) in enumerate(tqdm_object):
+            bz = images.size(0)
+            labels = labels.long().cuda()
+            images = images.cuda()
+  
+            image_features = net.get_image_features(pixel_values = images).float()
+            image_features /= image_features.norm(dim=-1, keepdim=True)
+            
             if args.model == 'CLIP':
                 text_inputs = tokenizer([f"a photo of a {c}" for c in test_labels], padding=True, return_tensors="pt")
                 text_features = net.get_text_features(input_ids = text_inputs['input_ids'].cuda(), 
                                                 attention_mask = text_inputs['attention_mask'].cuda()).float()
                 text_features /= text_features.norm(dim=-1, keepdim=True)   
                 output = image_features @ text_features.T
+            '''
+            image_description_similarity = [None]*n_classes
+            image_description_similarity_cumulative = [None]*n_classes
+            for  i, (k, v) in enumerate(description_encodings.items()):
+                dot_product_matrix = image_features @ v.T
+                image_description_similarity[i] = dot_product_matrix
+                image_description_similarity_cumulative[i] = aggregate_similarity(image_description_similarity[i])
+            output = torch.stack(image_description_similarity_cumulative,dim=1)
+            '''
             if args.score == 'max-logit':
                 smax = to_np(output)
             else:

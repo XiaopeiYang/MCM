@@ -1,0 +1,148 @@
+{
+                    "smooth newt": [
+                                        "a small, dark-colored salamander",
+                                        "a long, slender body",
+                                        "a long tail",
+                                        "small, black eyes",
+                                        "smooth, moist skin",
+                                        "four legs that are each about the same length"
+                                    ],
+                    "eft": [
+                                        "a small, brightly colored salamander",
+                                        "typically orange or red with black spots",
+                                        "smooth, moist skin",
+                                        "two rows of large, plate-like scales",
+                                        "four toes on each foot",
+                                        "a long, slender tail"
+                                    ],
+                    "spotted salamander": [
+                                        "four-limbed amphibian",
+                                        "black or dark brown body with yellow spots",
+                                        "long tail",
+                                        "small eyes",
+                                        "moist skin",
+                                        "clawed hands and feet"
+                                    ],
+                    "grey wolf": [
+                                        "four-legged mammal",
+                                        "grey, black, or white fur",
+                                        "pointy ears",
+                                        "long snout",
+                                        "bushy tail",
+                                        "sharp teeth"
+                                    ],
+                     "Arctic fox": [
+                                        "small, compact body",
+                                        "short legs",
+                                        "thick fur",
+                                        "bushy tail",
+                                        "white or pale grey coat",
+                                        "black-tipped ears",
+                                        "black-tipped tail"
+                                    ],
+                                    "brown bear": [
+                                        "four-limbed mammal",
+                                        "brown fur",
+                                        "large body",
+                                        "short ears",
+                                        "long snout",
+                                        "small eyes",
+                                        "large claws"
+                                    ],
+                                    "starfish": [
+                                        "a five-pointed shape",
+                                        "a central disk",
+                                        "arms that radiate from the disk",
+                                        "a spiny surface",
+                                        "a bottom that is often white or light-colored"
+                                    ],
+                                    "zebra": [
+                                        "black and white stripes",
+                                        "hooves",
+                                        "a long neck",
+                                        "a mane",
+                                        "a tail"
+                                    ],
+                                    "balloon": [
+                                        "a round, inflated object",
+                                        "made of latex or rubber",
+                                        "can be brightly colored",
+                                        "often has a string or ribbon attached",
+                                        "used for decoration or as a toy"
+                                    ],
+                                    "high-speed train": [
+                                        "a large, sleek locomotive",
+                                        "multiple passenger cars",
+                                        "a network of metal rails",
+                                        "signals and crossing gates",
+                                        "a platform or station"
+                                    ],
+                                    "canoe": [
+                                        "a long, narrow boat",
+                                        "pointed at both ends",
+                                        "open top",
+                                        "paddles",
+                                        "life jackets"
+                                    ],
+                                    "missile": [
+                                        "a long, cylindrical body",
+                                        "a pointed nose",
+                                        "wings or fins",
+                                        "a tail with a stabilizing fin",
+                                        "a propulsion system, typically a rocket engine",
+                                        "a guidance system",
+                                        "a warhead"
+                                    ],
+                                    "moped": [
+                                        "two-wheeled vehicle",
+                                        "small engine",
+                                        "pedals",
+                                        "handlebars",
+                                        "seat",
+                                        "headlight",
+                                        "taillight"
+                                    ],
+                                    "sailboat": [
+                                        "a boat with sails",
+                                        "a mast to support the sails",
+                                        "a hull, or body, typically made of wood or fiberglass",
+                                        "a keel, or fin, running along the bottom of the hull to provide stability",
+                                        "one or more masts, each with a sail",
+                                        "rigging, or lines, to support and control the sails",
+                                        "a rudder, or steering device"
+                                    ],
+                                    "snowmobile": [
+                                        "a vehicle designed for travel on snow",
+                                        "typically has a skis or track at the front and one or more wheels at the rear",
+                                        "may have a windshield and a seat for the rider",
+                                        "may have a headlight and taillights",
+                                        "may have a flag to indicate the rider's direction"
+                                    ],
+                                    "space shuttle": [
+                                        "large, winged spacecraft",
+                                        "white with black and grey markings",
+                                        "two large boosters attached to the main body",
+                                        "a large cargo bay door",
+                                        "a vertical tail fin",
+                                        "small windows along the sides"
+                                    ],
+                                    "steam locomotive": [
+                                        "a large, powerful engine",
+                                        "a coal-fired boiler",
+                                        "a smoke stack",
+                                        "a water tank",
+                                        "a tender",
+                                        "a cab",
+                                        "a set of wheels",
+                                        "a set of tracks"
+                                    ],
+                                    "tank": [
+                                        "large, armoured vehicle",
+                                        "tracks or wheels",
+                                        "a turret with a gun",
+                                        "a commander's cupola",
+                                        "a hull with a hatch",
+                                        "a engine compartment",
+                                        "storage compartments"
+                                    ]  
+}

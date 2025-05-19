@@ -1,0 +1,93 @@
+{
+                    "brambling": [
+                                        "a small, sparrow-like bird",
+                                        "brown and white plumage",
+                                        "a black head with a white stripe above the eye",
+                                        "a black bill",
+                                        "a forked tail",
+                                        "yellow legs"
+                                    ],
+                    "American bullfrog": [
+                                        "large size",
+                                        "green or brown body",
+                                        "dark spots on the body",
+                                        "webbed feet",
+                                        "long hind legs for jumping",
+                                        "large eardrums",
+                                        "long tongue"
+                                    ],
+                    "Greater Swiss Mountain Dog": [
+                                        "large, muscular body",
+                                        "thick, double coat of fur",
+                                        "black, brown, or white with black markings",
+                                        "long head with a square muzzle",
+                                        "dark eyes",
+                                        "triangular ears",
+                                        "strong, straight legs",
+                                        "large, round feet",
+                                        "long tail"
+                                    ],
+                    "Siamese cat": [
+                                        "blue eyes",
+                                        "pointy ears",
+                                        "long, slender body",
+                                        "short fur",
+                                        "light-colored fur with dark points on the face, ears, legs, and tail"
+                                    ],
+                    "common sorrel horse": [
+                                        "reddish-brown coat",
+                                        "white markings on the face and legs",
+                                        "black mane and tail",
+                                        "muscular body",
+                                        "long head",
+                                        "short, erect ears",
+                                        "large eyes"
+                                    ],
+                    "impala (antelope)": [
+                                        "four-limbed mammal",
+                                        "reddish-brown or tan coat",
+                                        "black stripes on the hindquarters",
+                                        "long, black tail with a white tuft at the end",
+                                        "black horns",
+                                        "large, dark eyes"
+                                    ],
+                    
+                    "container ship": [
+                                        "large vessel",
+                                        "blue or grey",
+                                        "white superstructure",
+                                        "stacks of containers on deck",
+                                        "cranes for loading and unloading containers",
+                                        "lifeboats"
+                                        ],
+                                        
+                    "garbage truck": [
+                                        "large, boxy vehicle",
+                                        "brightly colored",
+                                        "\"Garbage Truck\" or \"Sanitation Truck\" markings",
+                                        "rear loading door",
+                                        "hydraulic lift arm",
+                                        "large tires",
+                                        "often has a rear-view camera"
+                                    ],
+                    "sports car": [
+                                        "a vehicle with two or four doors",
+                                        "a sleek, aerodynamic design",
+                                        "a powerful engine",
+                                        "large wheels and tires",
+                                        "a spoiler or other performance-enhancing features",
+                                        "a stylish interior"
+                                                    ],
+                    "military aircraft": [
+                                        "large and powerful",
+                                        "designed for carrying weapons and other military equipment",
+                                        "typically has a camouflage paint job",
+                                        "often has a \"star\" or other symbol on the fuselage to identify the country of origin",
+                                        "may have a tailfin with a \"missile\" or other symbol"
+                                    ]
+                    
+                    
+                    
+                   
+                    
+}

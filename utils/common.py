@@ -4,6 +4,7 @@ import os
 import numpy as np
 import json
 import random
+import sys
 
 
 def setup_seed(seed):
@@ -11,20 +12,140 @@ def setup_seed(seed):
     torch.cuda.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
+#eval with description
+def load_json(filename):
+    if not filename.endswith('.json'):
+        filename += '.json'
+    with open(filename, 'r') as fp:
+        return json.load(fp) 
+#eval with description
+def wordify(string):
+    word = string.replace('_', ' ')
+    return word
 
+def make_descriptor_sentence(descriptor):
+    if descriptor.startswith('a') or descriptor.startswith('an'):
+        return f"which is {descriptor}"
+    elif descriptor.startswith('has') or descriptor.startswith('often') or descriptor.startswith('typically') or descriptor.startswith('may') or descriptor.startswith('can'):
+        return f"which {descriptor}"
+    elif descriptor.startswith('used'):
+        return f"which is {descriptor}"
+    else:
+        return f"which has {descriptor}"
+    
+# def make_descriptor_sentence(descriptor):
+#     return descriptor.replace('It', 'which').replace('.', ',')
+    
+def modify_descriptor(descriptor, apply_changes):
+    if apply_changes:
+        return make_descriptor_sentence(descriptor)
+    return descriptor 
+
+def load_gpt_descriptions(descriptor_fname, 
+                          category_name_inclusion='prepend', 
+                          apply_descriptor_modification=True, 
+                          before_text='', 
+                          between_text=', ', 
+                          after_text='', 
+                          classes_to_load=None):
+    
+    gpt_descriptions_unordered = load_json(descriptor_fname)
+    unmodify_dict = {}
+    
+    if classes_to_load is not None: 
+        gpt_descriptions = {c: gpt_descriptions_unordered[c] for c in classes_to_load}
+    else:
+        gpt_descriptions = gpt_descriptions_unordered
+        
+    if category_name_inclusion is not None:
+        if classes_to_load is not None:
+            keys_to_remove = [k for k in gpt_descriptions.keys() if k not in classes_to_load]
+            for k in keys_to_remove:
+                print(f"Skipping descriptions for \"{k}\", not in classes to load")
+                gpt_descriptions.pop(k)
+            
+        for i, (k, v) in enumerate(gpt_descriptions.items()):
+            if len(v) == 0:
+                v = ['']
+            
+            word_to_add = wordify(k)
+            
+            if category_name_inclusion == 'append':
+                build_descriptor_string = lambda item: f"{modify_descriptor(item, apply_descriptor_modification)}{between_text}{word_to_add}"
+            elif category_name_inclusion == 'prepend':
+                build_descriptor_string = lambda item: f"{before_text}{word_to_add}{between_text}{modify_descriptor(item, apply_descriptor_modification)}{after_text}"
+            else:
+                build_descriptor_string = lambda item: modify_descriptor(item, apply_descriptor_modification)
+            
+            unmodify_dict[k] = {build_descriptor_string(item): item for item in v}
+                
+            gpt_descriptions[k] = [build_descriptor_string(item) for item in v]
+            
+            if i == 0:
+                print(f"\nExample description for class {k}: \"{gpt_descriptions[k][0]}\"\n")
+                
+    return gpt_descriptions, unmodify_dict
 
 def get_test_labels(args, loader = None):
     if args.in_dataset == "ImageNet":
         test_labels = obtain_ImageNet_classes()
     elif args.in_dataset == "ImageNet10":
-        test_labels = obtain_ImageNet10_classes()
+        if args.eval_with_description:
+            gpt_descriptions, unmodify_dict = load_gpt_descriptions(descriptor_fname='descriptions/ImageNet10_descriptors.json', classes_to_load=None)
+            test_labels = gpt_descriptions
+        else:
+            test_labels = obtain_ImageNet10_classes()
+        
     elif args.in_dataset == "ImageNet20":
-        test_labels = obtain_ImageNet20_classes()
+        if args.eval_with_description:
+            gpt_descriptions, unmodify_dict = load_gpt_descriptions(descriptor_fname='descriptions/ImageNet20_descriptors.json', classes_to_load=None)
+            test_labels = gpt_descriptions
+        else:
+            test_labels = obtain_ImageNet20_classes()
+        
     elif args.in_dataset == "ImageNet100":
-        test_labels = obtain_ImageNet100_classes()
-    elif args.in_dataset in ['bird200', 'car196', 'food101','pet37']:
-        test_labels = loader.dataset.class_names_str
+        if args.eval_with_description:
+            print("Error: ImageNet100 does not contain descriptions. Cannot evaluate with descriptions.")
+            sys.exit(1)
+        else:
+            test_labels = obtain_ImageNet100_classes()
+    elif args.in_dataset in [ 'car196']:
+        if args.eval_with_description:
+            print("Error: car196 does not contain descriptions. Cannot evaluate with descriptions.")
+            sys.exit(1)
+        else:
+            test_labels = loader.dataset.class_names_str
+    elif args.in_dataset in ['bird200']:
+        if args.eval_with_description:
+            gpt_descriptions, unmodify_dict = load_gpt_descriptions(descriptor_fname='/export/home/xyang/hiwi/MCM/descriptions/cub_descriptors.json', classes_to_load=None)
+            test_labels = gpt_descriptions
+        else:
+            test_labels = loader.dataset.class_names_str
+    elif args.in_dataset in ['food101']:
+        if args.eval_with_description:
+            gpt_descriptions, unmodify_dict = load_gpt_descriptions(descriptor_fname='descriptions/food_descriptors.json', classes_to_load=None)
+            test_labels = gpt_descriptions
+        else:
+            test_labels = loader.dataset.class_names_str
+    elif args.in_dataset in ['pet37']:
+        if args.eval_with_description:
+            gpt_descriptions, unmodify_dict = load_gpt_descriptions(descriptor_fname='descriptions/pets_descriptors.json', classes_to_load=None)
+            test_labels = gpt_descriptions
+        else:
+            test_labels = loader.dataset.class_names_str
+    elif args.in_dataset in ['lichen_in','lichen_out','fungi','manzanita_in','manzanita_out','bulrush_in','bulrush_out','wild_rye_in','wild_rye_out','wrasse_in','wrasse_out','lichen','manzanita','bulrush','wild_rye','wrasse']:
+        if args.eval_with_description:
+            cls_labels = loader.dataset.class_names_str
+            gpt_descriptions, unmodify_dict = load_gpt_descriptions(descriptor_fname='descriptions/inaturalist_descriptors.json', classes_to_load=cls_labels)
+            test_labels = gpt_descriptions
+        else:
+            test_labels = loader.dataset.class_names_str
+    #elif args.in_dataset in ['fungi']:
+        #gpt_descriptions, unmodify_dict = load_gpt_descriptions(descriptor_fname='/export/home/xyang/hiwi/MCM/descriptions/idx_to_descriptions.json', classes_to_load=None)
+        #test_labels = gpt_descriptions
     return test_labels
+
+
 
 def obtain_ImageNet_classes():
     loc = os.path.join('data', 'ImageNet')
@@ -82,6 +203,20 @@ def get_num_cls(args):
         'car196': 196,
         'bird200':200, 
         'ImageNet': 1000,
+        'LC2500_lung': 3,
+        'LC2500_colon': 2,
+        'fungi': 6,
+        'lichen_in': 4,
+        #'lichen_out': 2,
+        'manzanita_in': 4,
+        'bulrush_in': 3,
+        'wild_rye_in': 4 ,
+        'wrasse_in': 4,
+        'lichen': 6,
+        'manzanita': 5,
+        'bulrush': 5,
+        'wild_rye': 5, 
+        'wrasse': 5
     }
     n_cls = NUM_CLS_DICT[args.in_dataset]
     return n_cls

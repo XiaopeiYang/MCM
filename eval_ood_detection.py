@@ -5,30 +5,29 @@ import torch
 from scipy import stats
 
 from utils.common import setup_seed, get_num_cls, get_test_labels
-from utils.detection_util import get_Mahalanobis_score, get_mean_prec, print_measures, get_and_print_results, get_ood_scores_clip
+from utils.detection_util import get_Mahalanobis_score, get_mean_prec, print_measures, get_and_print_results, get_ood_scores_clip, get_ood_scores_clip_description
 from utils.file_ops import save_as_dataframe, setup_log
 from utils.plot_util import plot_distribution
 from utils.train_eval_util import  set_model_clip, set_train_loader, set_val_loader, set_ood_loader_ImageNet
-# sys.path.append(os.path.dirname(__file__))
 
 
 def process_args():
     parser = argparse.ArgumentParser(description='Evaluates MCM Score for CLIP',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # setting for each run
-    parser.add_argument('--in_dataset', default='ImageNet', type=str,
+    parser.add_argument('--in_dataset', default='lichen', type=str,
                         choices=['ImageNet', 'ImageNet10', 'ImageNet20', 'ImageNet100',
-                                  'pet37', 'food101', 'car196', 'bird200'], help='in-distribution dataset')
+                                  'pet37', 'food101', 'car196', 'bird200','lichen_in','manzanita_in','bulrush_in','wild_rye_in','wrasse_in','lichen','wrasse','manzanita','bulrush','wild_rye'], help='in-distribution dataset')
     parser.add_argument('--root-dir', default="datasets", type=str,
                         help='root dir of datasets')
     parser.add_argument('--name', default="eval_ood",
                         type=str, help="unique ID for the run")
     parser.add_argument('--seed', default=5, type=int, help="random seed")
-    parser.add_argument('--gpu', default=0, type = int,
+    parser.add_argument('--gpu', default=3, type = int,
                         help='the GPU indice to use')
     parser.add_argument('-b', '--batch-size', default=512, type=int,
                         help='mini-batch size')
-    parser.add_argument('--T', type=int, default=1,
+    parser.add_argument('--T', type=int, default=0.5,
                         help='temperature parameter')
     parser.add_argument('--model', default='CLIP', type=str, help='model architecture')
     parser.add_argument('--CLIP_ckpt', type=str, default='ViT-B/16',
@@ -36,15 +35,21 @@ def process_args():
     parser.add_argument('--score', default='MCM', type=str, choices=[
         'MCM', 'energy', 'max-logit', 'entropy', 'var', 'maha'], help='score options')
     # for Mahalanobis score
-    parser.add_argument('--feat_dim', type=int, default=512, help='feat dim； 512 for ViT-B and 768 for ViT-L')
+    parser.add_argument('--feat_dim', type=int, default=512, help='feat dim; 512 for ViT-B and 768 for ViT-L')
     parser.add_argument('--normalize', type = bool, default = False, help='whether use normalized features for Maha score')
     parser.add_argument('--generate', type = bool, default = True, help='whether to generate class-wise means or read from files for Maha score')
     parser.add_argument('--template_dir', type = str, default = 'img_templates', help='the loc of stored classwise mean and precision matrix')
     parser.add_argument('--subset', default = False, type =bool, help = "whether uses a subset of samples in the training set")
     parser.add_argument('--max_count', default = 250, type =int, help = "how many samples are used to estimate classwise mean and precision matrix")
+    parser.add_argument('--num_in', default=None, type=int,
+                        help='Override number of in classes for in/out datasets')
+    parser.add_argument('--eval_with_description', default=False, type=bool,
+                        help='evaluate with description')
     args = parser.parse_args()
 
     args.n_cls = get_num_cls(args)
+    if args.num_in is not None:
+        args.n_cls = args.num_in
     args.log_directory = f"results/{args.in_dataset}/{args.score}/{args.model}_{args.CLIP_ckpt}_T_{args.T}_ID_{args.name}"
     os.makedirs(args.log_directory, exist_ok=True)
 
@@ -62,10 +67,33 @@ def main():
 
     if args.in_dataset in ['ImageNet10']: 
         out_datasets = ['ImageNet20']
+        #out_datasets = ['SUN', 'places365','dtd']
     elif args.in_dataset in ['ImageNet20']: 
         out_datasets = ['ImageNet10']
+        #out_datasets = ['SUN', 'places365','dtd']
     elif args.in_dataset in [ 'ImageNet', 'ImageNet100', 'bird200', 'car196', 'food101', 'pet37']:
-         out_datasets = ['iNaturalist','SUN', 'places365', 'dtd']
+        out_datasets = ['iNaturalist','SUN', 'places365', 'dtd']
+        #out_datasets = ['SUN', 'places365','dtd']
+    elif args.in_dataset in ['lichen_in']:
+        out_datasets = ['lichen_out']
+    elif args.in_dataset in ['manzanita_in']:
+        out_datasets = ['manzanita_out']
+    elif args.in_dataset in ['bulrush_in']:
+        out_datasets = ['bulrush_out']
+    elif args.in_dataset in ['wild_rye_in']:
+        out_datasets = ['wild_rye_out']
+    elif args.in_dataset in ['wrasse_in']:
+        out_datasets = ['wrasse_out']
+    elif args.in_dataset in ['lichen']:
+        out_datasets = ['wrasse', 'bulrush', 'manzanita', 'wild_rye']
+    elif args.in_dataset in ['wrasse']:
+        out_datasets = ['lichen', 'bulrush', 'manzanita', 'wild_rye']
+    elif args.in_dataset in ['manzanita']:
+        out_datasets = ['lichen', 'bulrush', 'wrasse', 'wild_rye']
+    elif args.in_dataset in ['bulrush']:
+        out_datasets = ['lichen', 'manzanita', 'wrasse', 'wild_rye']
+    elif args.in_dataset in ['wild_rye']:
+        out_datasets = ['lichen', 'manzanita', 'wrasse', 'bulrush']    
     test_loader = set_val_loader(args, preprocess)
     test_labels = get_test_labels(args, test_loader)
 
@@ -78,16 +106,25 @@ def main():
         precision = torch.load(os.path.join(args.template_dir,  f'{args.model}_precision_{args.in_dataset}_{args.max_count}_{args.normalize}.pt'), map_location= 'cpu').cuda()
         in_score = get_Mahalanobis_score(args, net, test_loader, classwise_mean, precision, in_dist = True)
     else:
-        in_score  = get_ood_scores_clip(args, net, test_loader, test_labels, in_dist=True)
+        if args.eval_with_description:
+            in_score = get_ood_scores_clip_description(args, net, test_loader, test_labels, in_dist=True)
+        else:
+            in_score  = get_ood_scores_clip(args, net, test_loader, test_labels, in_dist=True)
 
     auroc_list, aupr_list, fpr_list = [], [], []
     for out_dataset in out_datasets:
         log.debug(f"Evaluting OOD dataset {out_dataset}")
-        ood_loader = set_ood_loader_ImageNet(args, out_dataset, preprocess, root=os.path.join(args.root_dir, 'ImageNet_OOD_dataset'))
+        if out_dataset in ['lichen','wrasse','manzanita','bulrush','wild_rye']:
+            ood_loader = set_ood_loader_ImageNet(args, out_dataset, preprocess, root=os.path.join(args.root_dir))
+        else:
+            ood_loader = set_ood_loader_ImageNet(args, out_dataset, preprocess, root=os.path.join(args.root_dir, 'ImageNet_OOD_dataset'))
         if args.score == 'maha':
             out_score = get_Mahalanobis_score(args, net, ood_loader, classwise_mean, precision, in_dist = False)
         else:
-            out_score = get_ood_scores_clip(args, net, ood_loader, test_labels)
+            if args.eval_with_description:
+                out_score = get_ood_scores_clip_description(args, net, ood_loader, test_labels, in_dist=False)
+            else:
+                out_score = get_ood_scores_clip(args, net, ood_loader, test_labels)
         log.debug(f"in scores: {stats.describe(in_score)}")
         log.debug(f"out scores: {stats.describe(out_score)}")
         plot_distribution(args, in_score, out_score, out_dataset)

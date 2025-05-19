@@ -43,6 +43,10 @@ We consider the following (in-distribution) datasets:
 
 The ImageNet-1k dataset (ILSVRC-2012) can be downloaded [here](https://image-net.org/challenges/LSVRC/2012/index.php#). ImageNet-10, ImageNet-20, and ImageNet-100 can be generated given the class names and IDs provided in `data/ImageNet10/ImageNet-10-classlist.csv` , `data/ImageNet20/ImageNet-20-classlist.csv`, and `data/ImageNet100/class_list.txt` respectively. The other datasets will be automatically downloaded.
 
+The iNaturalist can be downloaded from: https://github.com/visipedia/inat_comp/tree/master/2021 
+Specifically, 'Train Mini Images [42GB]','Train Mini Annotations [45MB]' and 'Validation Images [8.4GB]','Validation Annotations [9.4MB]'. Extract them to the `./datasets` folder.
+
+
 
 
 ### Realistic semantically hard ID and OOD datasets 
@@ -64,6 +68,19 @@ python create_imagenet_subset.py --in_dataset ImageNet100 --src-dir datasets/Ima
 
 **Remarks**: As ImageNet-10 is less fine-grained than ImageNet-1k, the class n02422699 is referred to as antelope, originally named 'impala' (medium-sized antelopes) in ImageNet-1k, and class n02389026 as horse, originally named 'sorrel' (lighter-shade red horses) in ImageNet-1k. The original names from ImageNet-1k can be used if preferred.
 
+Subdatasets can be constructed from iNaturalist, including 'Manzanita', 'Wild Rye', 'Wrasse', 'Lichen', and 'Bulrush'. The following script can be used to create these subdatasets:
+```python
+# Manzanita 
+python create_imagenet_subset.py --in_dataset Manzanita --src-dir datasets/ImageNet --dst-dir datasets
+# Wild Rye
+python create_imagenet_subset.py --in_dataset Wild_rye --src-dir datasets/ImageNet --dst-dir datasets
+# Wrasse
+python create_imagenet_subset.py --in_dataset Wrasse --src-dir datasets/ImageNet --dst-dir datasets
+# Bulrush
+python create_imagenet_subset.py --in_dataset Bulrush --src-dir datasets/ImageNet --dst-dir datasets
+# Lichen
+python create_imagenet_subset.py --in_dataset Lichen --src-dir datasets/ImageNet --dst-dir datasets
+```
 
 
 ## Out-of-Distribution Datasets
@@ -79,6 +96,12 @@ MCM
     |-- ImageNet10
     |-- ImageNet20
     |-- ImageNet100
+    |-- iNaturalist
+    |-- Manzanita
+    |-- Wild_rye
+    |-- Wrasse
+    |-- Bulrush
+    |-- Lichen
     |-- ImageNet_OOD_dataset
         |-- iNaturalist
         |-- dtd
@@ -101,20 +124,40 @@ The main script for evaluating OOD detection performance is `eval_ood_detection.
 - `--seed`: A random seed for the experiments
 - `--gpu`: The index of the GPU to use. For example `--gpu=0`
 - `--in_dataset`: The in-distribution dataset
-  - Accepts:  `ImageNet`, `ImageNet10`, `ImageNet20`, `ImageNet100`, `bird200`, `car196`, `flower102`, `food101` , `pet37`,
+  - Accepts:  `ImageNet`, `ImageNet10`, `ImageNet20`, `ImageNet100`, `bird200`, `car196`, `flower102`, `food101` , `pet37`,`lichen_in`,`manzanita_in`,`bulrush_in`,`wild_rye_in`,`wrasse_in`,`lichen`,`wrasse`,`manzanita`,`bulrush`,`wild_rye`
 - `-b`, `--batch_size`: Mini-batch size
 - `--CLIP_ckpt`: Specifies the pre-trained CLIP encoder to use
   - Accepts: `ViT-B/32`, `ViT-B/16`, `ViT-L/14`.
 
 The OOD detection results will be generated and stored in  `results/in_dataset/score/CLIP_ckpt/name/`. 
 
-We provide bash scripts to help reproduce the numerical results of our paper and facilitate future research.  For example, to evaluate the performance of MCM score on ImageNet-1k, with an experiment name `eval_ood`: 
+We provide bash scripts to help reproduce the numerical results of our paper and facilitate future research.  For example, to evaluate the performance of MCM score on ImageNet-10, with an experiment name `eval_ood`: 
 
 ```sh
-sh scripts/eval_mcm.sh eval_ood ImageNet MCM
+sh scripts/eval_mcm.sh eval_ood ImageNet10 MCM
+```
+For example, to evaluate the performance of MCM score on lichen, with an experiment name `eval_ood`:
+
+```sh
+sh scripts/eval_mcm.sh eval_ood lichen MCM
 ```
 
+For example, to evaluate the performance of MCM score on lichen, with an experiment name `eval_ood` and evaluation with descriptions:
 
+```sh
+sh scripts/eval_mcm_with_descriptors.sh eval_ood lichen MCM True
+```
+Split the lichen class into `lichen_in` and `lichen_out`, and evaluate the OOD detection performance of the MCM score between them using the experiment name `eval_ood`.
+Example Usage:
+Set `lichen_in` to 3 classes and evaluate with descriptions:
+```sh
+sh scripts/eval_mcm_subcls.sh eval_ood lichen_in MCM 3 True
+```
+
+Set `lichen_in` to 2 classes and evaluate without descriptions:
+```sh
+sh scripts/eval_mcm_subcls.sh eval_ood lichen_in MCM 2 False
+```
 
 ### Citation
 

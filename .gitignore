@@ -36,3 +36,11 @@ results/
 linear_probe_logs/
 train_results/
 data/CIFAR*
+
+# add when testing
+histograms/
+#descriptions/
+*.txt
+test_umap/
+dataloaders_org/
+data/

@@ -1,0 +1,44 @@
+{
+    "CASPOFUNGIN": [
+        "General appearance,  swelling star phenotype, swelling spores with several germination tubes around",
+        "Spores shape,  swelling, round, larger than usual",
+        "Spores distribution,  isolated spores, some overlap possible",
+        "Germination tubes shape,  very short, at most one branching event",
+        "Germination tubes distribution,  several tubes per spore, tubes grow from a few localized positions on spore surface, often two germination events at 180 degree"
+    ],
+    "CARBENDAZIM": [
+        "General appearance,  curly germination phenotype, chaotic germination tube growth",
+        "Spores shape,  round, smaller than usual, often hidden by tubes",
+        "Spores distribution,  rather isolated, with a clear tendency to form clusters",
+        "Germination tubes shape,  curly, with several branching events, short",
+        "Germination tubes distribution,  several tubes per spore, tubes distribution and growth is chaotic, tubes tend to create agglomerates around the spore"
+    ],
+    "MYCELIUM": [
+        "General appearance,  mycelium growth, branching structures, no compound effect",
+        "Spores shape,  small and round, often hard to detect because covered by branching tubes",
+        "Spores distribution,  spores exist only as a part of a very large overlapping branching structure",
+        "Germination tubes shape,  extremely long, with several branching events, growing rather linearly with possibly some irregular curly patterns",
+        "Germination tubes distribution,  all tubes branch, overlap and connect, growing very far out of their original spore, creating a branching structure with rather stable density across the whole image"
+    ],
+    "GERMINATION INHIBITION": [
+        "General appearance , it is only spores, no germ tube growth",
+        "Spores shape,  round, small, of rather uniform size and shape",
+        "Spores distribution,  isolated spores, very little overlap",
+        "Germination tubes shape,  extremely short to non-existent, no branching events, straight",
+        "Germination tubes distribution,  zero to one tube per spore"
+    ],
+    "GWT1": [
+        "General appearance,  pearl necklace phenotype, germination tubes look like pebbles",
+        "Spores shape,  round, large",
+        "Spores distribution,  isolated spores, some overlap possible",
+        "Germination tubes shape,  tubes look like a line of pebbles along a necklace, short, thicker than usual",
+        "Germination tubes distribution,  one or two tubes per spore, growing from opposite points on the spore surface, at most one branching event"
+    ],
+    "TEBUCONAZOLE": [
+        "General appearance,  swelling spores of different shapes, from round to ovoidal, irregular distribution of germination tubes",
+        "Spores shape,  swelling, variable shape and size, some spores are ovoidal",
+        "Spores distribution,  isolated spores, some overlap possible",
+        "Germination tubes shape,  short, can have more than one branching event, can be either straight or curly",
+        "Germination tubes distribution,  two to several tubes per spore, tubes grow from a few localized points irregularly distributed on the spore surface"
+    ]
+}
