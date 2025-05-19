@@ -148,13 +148,17 @@ For example, to evaluate the performance of MCM score on lichen, with an experim
 sh scripts/eval_mcm_with_descriptors.sh eval_ood lichen MCM True
 ```
 Split the lichen class into `lichen_in` and `lichen_out`, and evaluate the OOD detection performance of the MCM score between them using the experiment name `eval_ood`.
+
 Example Usage:
+
 Set `lichen_in` to 3 classes and evaluate with descriptions:
+
 ```sh
 sh scripts/eval_mcm_subcls.sh eval_ood lichen_in MCM 3 True
 ```
 
 Set `lichen_in` to 2 classes and evaluate without descriptions:
+
 ```sh
 sh scripts/eval_mcm_subcls.sh eval_ood lichen_in MCM 2 False
 ```
